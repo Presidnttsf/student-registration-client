@@ -1,18 +1,35 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Spinner, Alert, Container, Table, Button } from 'react-bootstrap';
+import { Modal, Form } from 'react-bootstrap';
+import EditStudentModal from './EditStudentModal';
+
 
 const StudentList = () => {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    city: '',
+    courses: '',
+  });
+  
+console.log("checking formdata", formData)
 
-  const baseURL = 'http://localhost:5000/getstudents';
+  const baseURL = 'http://localhost:5000';
 
-  const getData = async () => {
+
+  async function getData  () {
     try {
-      const res = await axios.get(baseURL);
+      const res = await axios.get(`${baseURL}/getstudents`);
+      
       setStudents(res.data);
+      console.log("fetching data", res.data)
       setLoading(false);
     } catch (err) {
       setError("Failed to fetch students");
@@ -21,22 +38,48 @@ const StudentList = () => {
   };
 
   useEffect(() => {
-    getData();
-  }, []);
+        getData();
+    }, []);
+
+// This function handles the edit action for a student
 
   const handleEdit = (student) => {
     // You can navigate to another page or open a modal here
+    setSelectedStudent(student)
     alert(`Edit clicked for: ${student.name}`);
+    setFormData({...student});
+    setShowModal(true);
   };
 
-  const handleDelete = async (id) => {
+function handleChange (event) {
+const {name, value} = event.target;
+setFormData((prevData) => ({
+  ...prevData,
+  [name]: value,
+}));
+}
+
+async function handleUpdate () {
+try {
+  await axios.put(`${baseURL}/updatestudent/${selectedStudent._id}`, formData);
+  setShowModal(false);
+  getData(); // Refresh list after update
+} catch (error) {
+  alert("Failed to update student");
+  console.error("Error updating student:", error);
+}
+
+}
+
+  async function handleDelete  (id) {
     const confirm = window.confirm("Are you sure you want to delete this student?");
     if (!confirm) return;
 
     try {
-      await axios.delete(`http://localhost:5000/deletestudent/${id}`);
+      await axios.delete(`${baseURL}/deletestudent/${id}`);
       getData(); // Refresh list
     } catch (err) {
+      console.error("checking", err)
       alert("Failed to delete student");
     }
   };
@@ -46,7 +89,16 @@ const StudentList = () => {
 
   return (
     <Container className="my-4">
-      <h2 className="mb-4 text-center">Student List</h2>
+      <h2 className="mb-4 text-center">Student List {students.length}</h2>
+{/* // Modal for editing student */}
+<EditStudentModal 
+ show={showModal}
+ onHide={() => setShowModal(false)}
+ formData={formData}
+ handleChange={handleChange}
+ handleUpdate={handleUpdate}
+/>
+
       <Table striped bordered hover responsive>
         <thead className="table-dark">
           <tr>
@@ -62,7 +114,7 @@ const StudentList = () => {
         </thead>
         <tbody>
           {students.map((student, index) => (
-            <tr key={student._id || index}>
+            <tr key={student._id}>
               <td>{index + 1}</td>
               <td>{student.name}</td>
               <td>{student.email}</td>
