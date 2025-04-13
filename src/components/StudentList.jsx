@@ -21,7 +21,7 @@ const StudentList = () => {
   
 console.log("checking formdata", formData)
 
-  const baseURL = 'http://localhost:5000';
+  const baseURL = 'https://studentregisteration.onrender.com';
 
 
   async function getData  () {
