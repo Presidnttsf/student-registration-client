@@ -5,12 +5,13 @@ import { Modal, Form } from 'react-bootstrap';
 import EditStudentModal from './EditStudentModal';
 
 
-const StudentList = () => {
+const StudentList = ({searchTerm}) => {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
+  
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -19,7 +20,7 @@ const StudentList = () => {
     courses: '',
   });
   
-console.log("checking formdata", formData)
+
 
   const baseURL = 'https://studentregisteration.onrender.com';
 
@@ -29,7 +30,7 @@ console.log("checking formdata", formData)
       const res = await axios.get(`${baseURL}/getstudents`);
       
       setStudents(res.data);
-      console.log("fetching data", res.data)
+      
       setLoading(false);
     } catch (err) {
       setError("Failed to fetch students");
@@ -83,6 +84,14 @@ try {
       alert("Failed to delete student");
     }
   };
+  const filteredStudents = students.filter((student) =>
+    student.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    student.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    student.city.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+
+
 
   if (loading) return <div className="text-center mt-4"><Spinner animation="border" /></div>;
   if (error) return <Alert variant="danger" className="mt-4">{error}</Alert>;
@@ -113,7 +122,7 @@ try {
           </tr>
         </thead>
         <tbody>
-          {students.map((student, index) => (
+          {filteredStudents.map((student, index) => (
             <tr key={student._id}>
               <td>{index + 1}</td>
               <td>{student.name}</td>

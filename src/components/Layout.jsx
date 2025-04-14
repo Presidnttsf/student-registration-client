@@ -1,8 +1,17 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Container, Navbar, Form, FormControl, Button, Nav } from 'react-bootstrap';
 import Footer from './Footer'; // Import Footer component
+import StudentList from './StudentList';
+import axios from 'axios';
 
-const Layout = ({ isLoggedIn, username, onLogin, onLogout, children }) => {
+const Layout = ({ isLoggedIn,  onLogin, onLogout, children }) => {
+
+
+const username = localStorage.getItem('username') || 'Guest'; // Get username from localStorage or set default to 'Guest'
+
+
+  const [searchTerm, setSearchTerm] = useState("");
+
   return (
     <>
       <Navbar bg="light" expand="lg" className="shadow-sm">
@@ -19,6 +28,7 @@ const Layout = ({ isLoggedIn, username, onLogin, onLogout, children }) => {
               placeholder="Search"
               className="me-2"
               aria-label="Search"
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </Form>
 
@@ -35,7 +45,10 @@ const Layout = ({ isLoggedIn, username, onLogin, onLogout, children }) => {
       </Navbar>
 
       {/* Main Content */}
-      <Container className="mt-4">{children}</Container>
+      <Container className="mt-4">
+        <StudentList searchTerm={searchTerm} />
+        {children}
+      </Container>
 
       {/* Footer */}
       <Footer /> {/* Use the Footer component here */}
